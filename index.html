@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ты — мой уют ❤️</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <style>
+        :root {
+            --bg: linear-gradient(180deg, #fff5f7 0%, #ffe4e9 100%);
+            --text: #ff8fa3;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background: var(--bg);
+            font-family: "Caveat", cursive;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* Центральная карточка */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            padding: 40px;
+            border-radius: 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(255, 77, 109, 0.15);
+            z-index: 100;
+            width: 85%;
+            max-width: 550px;
+            animation: fadeIn 2s ease-out;
+            pointer-events: none;
+        }
+
+        h1 { color: var(--text); font-size: 3.2rem; margin: 0; line-height: 1.2; }
+
+        /* Polaroid */
+        .polaroid {
+            background: white;
+            padding: 12px 12px 50px 12px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+            border: 1px solid #fcfcfc;
+            display: inline-block;
+        }
+
+        .polaroid img { width: 280px; height: 280px; object-fit: cover; display: block; }
+
+        /* Полет */
+        .floating-item {
+            position: absolute; pointer-events: none; will-change: transform;
+            animation: floatUp var(--d) linear forwards; opacity: 0; transform: translateX(-50%);
+        }
+
+        .type-photo { z-index: 20; }
+        .type-balloon { z-index: 5; }
+
+        @keyframes floatUp {
+            0% { transform: translate(-50%, 115vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translate(-50%, -60vh) rotate(15deg); opacity: 0; }
+        }
+
+        /* ФИНАЛЬНАЯ ПЛАШКА */
+        #final-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ff8fa3;
+            opacity: 95%;
+            display: none; flex-direction: column; justify-content: center;
+            align-items: center; z-index: 1000; opacity: 0; transition: opacity 2s ease;
+        }
+
+        .final-content {
+            background: white; padding: 20px 20px 80px 20px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2); transform: rotate(-2deg);
+        }
+
+        .final-content img { width: 400px; height: 400px; object-fit: cover; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.9rem; }
+            .final-content img { width: 280px; height: 280px; }
+            .balloon-img { width: 600px !important; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glass-card" id="main-card">
+        <h1>Ты — мой маленький <br> <span class="highlight">уют в большом мире</span></h1>
+    </div>
+
+    <!-- Финальная плашка -->
+    <div id="final-overlay">
+        <div class="final-content">
+            <img src="main.png" alt="Главное фото">
+        </div>
+        <h2 style="color: #ffffff; font-size: 3rem; margin-top: 30px; width: 600px; text-align: center;">Спасибо за теплые моменты, ценю каждую минутку с тобой</h2>
+    </div>
+
+    <script>
+        const photos = Array.from({length: 15}, (_, i) => `${i + 1}.png`);
+        let photoIndex = 0;
+        let currentCol = 0;
+        let spawnCount = 0;
+        let photosSent = 0;
+        const totalPhotos = 15;
+
+        const spawnInterval = setInterval(() => {
+            if (photosSent >= totalPhotos) {
+                // Если все фото отправлены, ждем их завершения и показываем финал
+                clearInterval(spawnInterval);
+                setTimeout(showFinal, 15000); // 15 сек задержка, чтобы последнее фото улетело
+                return;
+            }
+            spawn();
+        }, 2500);
+
+        function spawn() {
+            const el = document.createElement('div');
+            el.className = 'floating-item';
+            const isPhoto = spawnCount % 2 === 0; 
+            spawnCount++;
+
+            let x;
+            const colCount = window.innerWidth < 600 ? 3 : 5;
+
+            if (isPhoto && photosSent < totalPhotos) {
+                el.classList.add('type-photo');
+                x = (currentCol * (70 / (colCount - 1))) + 15;
+                const imgName = photos[photoIndex];
+                el.innerHTML = `<div class="polaroid"><img src="${imgName}"></div>`;
+                photoIndex++;
+                photosSent++; 
+            } else {
+                el.classList.add('type-balloon');
+                x = currentCol * (100 / (colCount - 1));
+                el.innerHTML = `<img src="balloons.png" class="balloon-img" style="width: 900px; height: auto; opacity: 0.8;">`;
+            }
+
+            currentCol = (currentCol + 1) % colCount;
+            const duration = 22; 
+            el.style.left = x + 'vw';
+            el.style.setProperty('--d', duration + 's');
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), duration * 1000);
+        }
+
+        function showFinal() {
+            const overlay = document.getElementById('final-overlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.style.opacity = '1', 100);
+        }
+
+        // Мгновенный запуск
+        spawn(); spawn();
+    </script>
+</body>
+</html>
